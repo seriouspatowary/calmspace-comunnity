@@ -31,7 +31,7 @@ export function Post() {
 
     try {
       await dispatch(sendPost({ text: data.bio, token })).unwrap();
-      await dispatch(fetchPosts({ token })) // ✅ this line guarantees fresh data
+      await dispatch(fetchPosts({ token })) 
 
       toast.success("Post submitted successfully!")
       reset({ bio: "" })
