@@ -125,6 +125,29 @@ export const fetchReplies = createAsyncThunk<
   }
 });
 
+export const toggleReaction = createAsyncThunk<
+  { postId: string; reactions: Reaction[] },
+  { postId: string; token: string },
+  { rejectValue: string }
+>("posts/toggleReaction", async ({ postId, token }, thunkAPI) => {
+  try {
+    const response = await axios.post(
+      `${apiUrl}/api/comunity/add-reaction/${postId}`,
+      {}, // body can be empty if backend handles toggle internally
+      {
+        headers: {
+          Authorization: `${token}`,
+        },
+      }
+    );
+    return { postId, reactions: response.data.reactions };
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to toggle like");
+  }
+});
+
+
 
 const postSlice = createSlice({
   name: "posts",
@@ -194,7 +217,18 @@ const postSlice = createSlice({
         const postId = action.meta.arg.postId;
         state.repliesLoading[postId] = false;
         state.error = action.payload || "Failed to fetch replies";
-      });
+      })
+
+
+      // toggleReaction
+      .addCase(toggleReaction.fulfilled, (state, action) => {
+        const { postId, reactions } = action.payload;
+        const post = state.posts.find((p) => p._id === postId);
+        if (post) {
+          post.reactions = reactions;
+        }
+      })
+
   },
 });
 

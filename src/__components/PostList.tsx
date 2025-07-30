@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
-import { fetchPosts, replyPost, fetchReplies } from "@/store/slices/postSlice"
+import { fetchPosts, replyPost, fetchReplies, toggleReaction } from "@/store/slices/postSlice"
 import type { AppDispatch, RootState } from "@/store"
 import {
   Card,
@@ -20,6 +20,8 @@ export function PostList() {
   const [replyText, setReplyText] = useState<string>("")
   const [showReplyBox, setShowReplyBox] = useState<string | null | undefined>(null)
   const [showReplies, setShowReplies] = useState<{ [postId: string]: boolean }>({})
+
+
 
   useEffect(() => {
     if (!token) return
@@ -65,6 +67,12 @@ export function PostList() {
       setShowReplies(prev => ({ ...prev, [postId]: false }))
     }
   }
+
+  const handleToggleLike = (postId: string) => {
+    if (!token) return;
+    dispatch(toggleReaction({ postId, token }));
+  };
+  
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
@@ -184,6 +192,20 @@ export function PostList() {
                 </div>
               </div>
             )}
+<Button
+      variant="ghost"
+      size="sm"
+      onClick={() => handleToggleLike(post._id!)}
+    >
+      {post.reactions?.some((r) =>  r.reactionType === "like")
+        ? "❤️ Liked"
+        : "🤍 Like"}{" "}
+      {post.reactions?.filter((r) => r.reactionType === "like").length
+        ? `(${post.reactions.filter((r) => r.reactionType === "like").length})`
+        : ""}
+    </Button>
+
+
           </CardFooter>
         </Card>
       ))}
